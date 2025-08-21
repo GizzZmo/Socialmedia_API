@@ -8,8 +8,8 @@ const sequelize = new Sequelize({
   define: {
     timestamps: true,
     underscored: true,
-    freezeTableName: true
-  }
+    freezeTableName: true,
+  },
 });
 
 module.exports = sequelize;

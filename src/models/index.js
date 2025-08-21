@@ -10,17 +10,17 @@ User.hasMany(Comment, { foreignKey: 'user_id', as: 'comments' });
 User.hasMany(Like, { foreignKey: 'user_id', as: 'likes' });
 
 // Follow associations (self-referencing)
-User.belongsToMany(User, { 
-  through: Follow, 
-  as: 'followers', 
+User.belongsToMany(User, {
+  through: Follow,
+  as: 'followers',
   foreignKey: 'following_id',
-  otherKey: 'follower_id'
+  otherKey: 'follower_id',
 });
-User.belongsToMany(User, { 
-  through: Follow, 
-  as: 'following', 
+User.belongsToMany(User, {
+  through: Follow,
+  as: 'following',
   foreignKey: 'follower_id',
-  otherKey: 'following_id'
+  otherKey: 'following_id',
 });
 
 // Post associations
@@ -45,5 +45,5 @@ module.exports = {
   Post,
   Comment,
   Like,
-  Follow
+  Follow,
 };

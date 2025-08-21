@@ -2,13 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const sequelize = require('./config/database');
+const logger = require('./config/logger');
+const httpLogger = require('./middleware/httpLogger');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Import routes
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
 const commentRoutes = require('./routes/comments');
+const followRoutes = require('./routes/follows');
+const feedRoutes = require('./routes/feed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +22,10 @@ const API_VERSION = process.env.API_VERSION || 'v1';
 // Security middleware
 app.use(helmet());
 app.use(cors());
+app.use(compression());
+
+// HTTP request logging
+app.use(httpLogger);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -28,7 +37,7 @@ app.get('/', (req, res) => {
     message: 'Social Media API',
     version: API_VERSION,
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -36,14 +45,16 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
 // API routes
 app.use(`/${API_VERSION}/users`, userRoutes);
+app.use(`/${API_VERSION}/users`, followRoutes);
 app.use(`/${API_VERSION}/posts`, postRoutes);
 app.use(`/${API_VERSION}/posts`, commentRoutes);
+app.use(`/${API_VERSION}`, feedRoutes);
 
 // 404 handler
 app.use('*', notFound);
@@ -56,38 +67,36 @@ const startServer = async () => {
   try {
     // Test database connection
     await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
+    logger.info('Database connection has been established successfully.');
 
     // Sync database models
     await sequelize.sync({ force: false });
-    console.log('Database models synchronized.');
+    logger.info('Database models synchronized.');
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`
-🚀 Social Media API Server is running!
-📍 Server: http://localhost:${PORT}
-📖 API Version: ${API_VERSION}
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
-📊 Health Check: http://localhost:${PORT}/health
-📚 API Base URL: http://localhost:${PORT}/${API_VERSION}
-      `);
+      logger.info(`🚀 Social Media API Server is running!`);
+      logger.info(`📍 Server: http://localhost:${PORT}`);
+      logger.info(`📖 API Version: ${API_VERSION}`);
+      logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`📊 Health Check: http://localhost:${PORT}/health`);
+      logger.info(`📚 API Base URL: http://localhost:${PORT}/${API_VERSION}`);
     });
   } catch (error) {
-    console.error('Unable to start server:', error);
+    logger.error('Unable to start server:', error);
     process.exit(1);
   }
 };
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  logger.info('SIGTERM received, shutting down gracefully...');
   await sequelize.close();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  logger.info('SIGINT received, shutting down gracefully...');
   await sequelize.close();
   process.exit(0);
 });
