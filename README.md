@@ -168,10 +168,11 @@ The `/posts/{postId}/comments` endpoint manages comments on a specific post.
     {
       "text": "This is a great point!"
     }
-    ```
-*   **Response:** `201 Created` with the newly created comment object.
 
 ````
+
+**Response:** `201 Created` with the newly created comment object.
+
 ### Rate Limiting
 
 To ensure fair usage and prevent abuse, the API will implement rate limiting. Unauthenticated requests will have a lower rate limit than authenticated requests. The rate limit information will be communicated to the client through HTTP headers in the response, such as `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`.
