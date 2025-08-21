@@ -177,6 +177,32 @@ Along with sample posts, comments, and follow relationships.
 - **CORS**: Configurable cross-origin requests
 - **Helmet**: Security headers
 
+## Continuous Integration
+
+The project includes a GitHub Actions CI workflow (`.github/workflows/ci.yml`) that automatically:
+
+- **Tests Multiple Node.js Versions**: Runs on Node.js 18.x and 20.x
+- **Installs Dependencies**: Uses `npm ci` for fast, reliable builds
+- **Sets Up Test Environment**: Configures environment variables and test database
+- **Runs Database Setup**: Executes `npm run setup-db` to initialize the test database
+- **Executes Test Suite**: Runs all tests with `npm test`
+- **Cleans Up**: Removes test database after completion
+
+### CI Triggers
+The CI workflow runs on:
+- Push to `main` or `develop` branches
+- Pull requests targeting `main` or `develop` branches
+
+### Environment Variables in CI
+The CI automatically sets up the following test environment:
+```bash
+PORT=3000
+JWT_SECRET=test-jwt-secret-for-ci-do-not-use-in-production
+DB_PATH=./test-database.sqlite
+NODE_ENV=test
+API_VERSION=v1
+```
+
 ## Deployment Considerations
 
 ### Environment Variables
