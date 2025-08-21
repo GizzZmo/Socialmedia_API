@@ -1,5 +1,6 @@
 require('dotenv').config();
 const sequelize = require('../config/database');
+const logger = require('../config/logger');
 const { User, Post, Comment, Like, Follow } = require('../models');
 
 const setupDatabase = async () => {
@@ -170,7 +171,7 @@ Test accounts:
 - mike_johnson (mike.johnson@example.com) / password123
     `);
   } catch (error) {
-    console.error('❌ Database setup failed:', error);
+    logger.error('❌ Database setup failed:', error);
     process.exit(1);
   } finally {
     await sequelize.close();
