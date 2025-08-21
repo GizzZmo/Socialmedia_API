@@ -2,18 +2,27 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 const { auth, optionalAuth } = require('../middleware/auth');
-const { authEndpointRateLimit, unauthRateLimit } = require('../middleware/rateLimiting');
-const { validate, userRegistrationSchema, userLoginSchema } = require('../middleware/validation');
+const {
+  authEndpointRateLimit,
+  unauthRateLimit,
+} = require('../middleware/rateLimiting');
+const {
+  validate,
+  userRegistrationSchema,
+  userLoginSchema,
+} = require('../middleware/validation');
 
 const router = express.Router();
 
 // POST /users - Create a new user (Registration)
-router.post('/', 
+router.post(
+  '/',
   authEndpointRateLimit,
   validate(userRegistrationSchema),
   async (req, res, next) => {
     try {
-      const { username, email, password, full_name, bio, profile_picture_url } = req.body;
+      const { username, email, password, full_name, bio, profile_picture_url } =
+        req.body;
 
       const user = await User.create({
         username,
@@ -21,18 +30,16 @@ router.post('/',
         password,
         full_name,
         bio,
-        profile_picture_url
+        profile_picture_url,
       });
 
-      const token = jwt.sign(
-        { userId: user.id }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: '7d' }
-      );
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
 
       res.status(201).json({
         user,
-        token
+        token,
       });
     } catch (error) {
       next(error);
@@ -41,7 +48,8 @@ router.post('/',
 );
 
 // POST /users/login - User login
-router.post('/login',
+router.post(
+  '/login',
   authEndpointRateLimit,
   validate(userLoginSchema),
   async (req, res, next) => {
@@ -58,15 +66,13 @@ router.post('/login',
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      const token = jwt.sign(
-        { userId: user.id }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: '7d' }
-      );
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
 
       res.json({
         user,
-        token
+        token,
       });
     } catch (error) {
       next(error);
@@ -75,7 +81,8 @@ router.post('/login',
 );
 
 // GET /users/:userId - Get user profile
-router.get('/:userId',
+router.get(
+  '/:userId',
   unauthRateLimit,
   optionalAuth,
   async (req, res, next) => {
@@ -83,7 +90,7 @@ router.get('/:userId',
       const { userId } = req.params;
 
       const user = await User.findByPk(userId, {
-        attributes: { exclude: ['password'] }
+        attributes: { exclude: ['password'] },
       });
 
       if (!user) {
@@ -98,15 +105,12 @@ router.get('/:userId',
 );
 
 // GET /users/me - Get current user profile
-router.get('/me',
-  auth,
-  async (req, res, next) => {
-    try {
-      res.json(req.user);
-    } catch (error) {
-      next(error);
-    }
+router.get('/me', auth, async (req, res, next) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 module.exports = router;

@@ -9,6 +9,8 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
 const commentRoutes = require('./routes/comments');
+const followRoutes = require('./routes/follows');
+const feedRoutes = require('./routes/feed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +30,7 @@ app.get('/', (req, res) => {
     message: 'Social Media API',
     version: API_VERSION,
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -36,14 +38,16 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
 // API routes
 app.use(`/${API_VERSION}/users`, userRoutes);
+app.use(`/${API_VERSION}/users`, followRoutes);
 app.use(`/${API_VERSION}/posts`, postRoutes);
 app.use(`/${API_VERSION}/posts`, commentRoutes);
+app.use(`/${API_VERSION}`, feedRoutes);
 
 // 404 handler
 app.use('*', notFound);
